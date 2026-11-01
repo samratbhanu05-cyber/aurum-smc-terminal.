@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aurum SMC Terminal — Prototype</title>
+<style>
+:root{--bg:#0b1020;--panel:#121a2b;--panel2:#182238;--line:#26334b;--text:#edf2ff;--muted:#91a0bb;--gold:#e6bd68;--green:#35c98a;--red:#ff6878;--blue:#73a7ff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 Inter,system-ui,Arial,sans-serif}
+header{display:flex;justify-content:space-between;align-items:center;padding:16px 22px;border-bottom:1px solid var(--line);background:#0e1526;position:sticky;top:0;z-index:5}
+.brand{font-weight:800;letter-spacing:.08em}.brand span{color:var(--gold)}.sub{color:var(--muted);font-size:12px;margin-top:2px}
+.pill{border:1px solid #755f35;color:var(--gold);border-radius:30px;padding:6px 10px;font-size:11px;font-weight:700}
+main{max-width:1440px;margin:auto;padding:18px;display:grid;gap:14px}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.card,.panel{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:15px;min-width:0}
+.label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.09em}.value{font-size:22px;font-weight:750;margin-top:7px}.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.layout{display:grid;grid-template-columns:minmax(0,1.8fr) minmax(280px,.8fr);gap:14px}.panel h2{font-size:14px;margin:0 0 12px}.chart{height:490px;border-radius:8px;overflow:hidden;background:#0d1423}.chart iframe{width:100%;height:100%;border:0}
+.right{display:grid;gap:14px;align-content:start}.signal{border:1px solid var(--line);border-radius:10px;padding:14px;background:var(--panel2)}
+.signal-head{display:flex;justify-content:space-between;align-items:center}.wait{color:var(--gold);font-weight:800;font-size:20px}.small{font-size:12px;color:var(--muted)}
+.rows{display:grid;gap:10px;margin-top:12px}.rowline{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid var(--line);padding-bottom:8px}.rowline:last-child{border:0;padding:0}
+.tag{font-size:11px;border-radius:6px;padding:3px 7px;background:#28344b;color:#c7d4ec}.controls{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+button{background:#263652;border:1px solid #3a4d70;color:var(--text);padding:9px 12px;border-radius:8px;cursor:pointer;font-weight:650}button.primary{background:#725a2c;border-color:#9c7a3e;color:#fff}button:active{transform:scale(.98)}
+select,input{background:#0d1423;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:9px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.metric{background:#0d1423;padding:11px;border-radius:9px}.metric b{display:block;font-size:16px;margin-top:4px}
+.note{border-left:3px solid var(--gold);background:#1c2230;padding:11px 13px;border-radius:5px;color:#c6d0e3;font-size:12px}
+footer{color:var(--muted);font-size:11px;text-align:center;padding:8px 0 18px}
+@media(max-width:850px){.layout{grid-template-columns:1fr}.cards{grid-template-columns:repeat(2,1fr)}.chart{height:390px}}
+@media(max-width:480px){header{padding:13px}.sub{max-width:190px}.cards{gap:8px}.card{padding:11px}.value{font-size:18px}main{padding:10px}.chart{height:330px}.grid2{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<header>
+ <div><div class="brand">AURUM <span>SMC</span> TERMINAL</div><div class="sub">XAUUSD · Market analysis workspace</div></div>
+ <div class="pill">PROTOTYPE · DEMO MODE</div>
+</header>
+<main>
+ <section class="cards">
+  <div class="card"><div class="label">Instrument</div><div class="value">XAUUSD</div><div class="hint">Gold / US Dollar</div></div>
+  <div class="card"><div class="label">Analysis timeframe</div><div class="value" id="tfVal">15m</div><div class="hint">Change timeframe below</div></div>
+  <div class="card"><div class="label">Market bias</div><div class="value" id="biasVal">Unconfirmed</div><div class="hint">Awaiting verified feed</div></div>
+  <div class="card"><div class="label">Signal status</div><div class="value" id="statusVal">WAIT</div><div class="hint">No live trade recommendation</div></div>
+ </section>
+ <section class="layout">
+  <div class="panel">
+   <h2>Live chart · TradingView</h2>
+   <div class="chart"><iframe title="TradingView XAUUSD chart" src="https://s.tradingview.com/widgetembed/?frameElementId=tv_chart&symbol=OANDA%3AXAUUSD&interval=15&hidesidetoolbar=0&symboledit=1&saveimage=0&toolbarbg=0b1020&theme=dark&style=1&timezone=Asia%2FKolkata&withdateranges=1&hideideas=1&studies=%5B%5D" allowtransparency="true" scrolling="no"></iframe></div>
+   <div class="controls">
+    <label class="small" for="tf">Timeframe</label>
+    <select id="tf"><option>5m</option><option selected>15m</option><option>30m</option><option>1h</option><option>4h</option><option>1D</option></select>
+    <button onclick="refreshDemo()">Refresh demo analysis</button>
+   </div>
+  </div>
+  <aside class="right">
+   <div class="panel">
+    <h2>Signal desk</h2>
+    <div class="signal">
+     <div class="signal-head"><span class="label">Current decision</span><span class="tag">DEMO ONLY</span></div>
+     <div class="wait" id="signal">WAIT</div>
+     <div class="small" id="reason">Live market feed and confirmation rules are not connected yet.</div>
+     <div class="rows">
+      <div class="rowline"><span class="small">Entry</span><b>—</b></div>
+      <div class="rowline"><span class="small">Stop loss</span><b>—</b></div>
+      <div class="rowline"><span class="small">Target</span><b>—</b></div>
+      <div class="rowline"><span class="small">Risk : Reward</span><b>—</b></div>
+     </div>
+    </div>
+    <div class="controls"><button class="primary" onclick="refreshDemo()">Run demo check</button><button onclick="resetDemo()">Reset</button></div>
+   </div>
+   <div class="panel">
+    <h2>SMC checklist</h2>
+    <div class="rows">
+     <div class="rowline"><span>HTF market structure</span><span class="tag">Not checked</span></div>
+     <div class="rowline"><span>Liquidity sweep</span><span class="tag">Not checked</span></div>
+     <div class="rowline"><span>BOS / CHOCH</span><span class="tag">Not checked</span></div>
+     <div class="rowline"><span>Order Block / FVG</span><span class="tag">Not checked</span></div>
+     <div class="rowline"><span>Entry confirmation</span><span class="tag">Not checked</span></div>
+    </div>
+   </div>
+  </aside>
+ </section>
+ <section class="panel">
+  <h2>Analysis settings · planned engine</h2>
+  <div class="grid2">
+   <div class="metric"><span class="label">Higher timeframe</span><b>1H + 4H</b><span class="small">Directional bias</span></div>
+   <div class="metric"><span class="label">Entry timeframe</span><b>5M + 15M</b><span class="small">Confirmation</span></div>
+   <div class="metric"><span class="label">Risk model</span><b>0.5% max / idea</b><span class="small">Configurable; demo only</span></div>
+   <div class="metric"><span class="label">Signal filter</span><b>Confluence required</b><span class="small">No-trade is a valid result</span></div>
+  </div>
+ </section>
+ <div class="note"><b>Important:</b> This is a front-end prototype. The chart is embedded from TradingView, but the SMC checklist and signal engine are not connected to verified live OHLC data. The demo must never be used to place real trades. Next development step is to connect a licensed/reliable XAUUSD data source, then build and backtest explicit rules before enabling alerts.</div>
+</main>
+<footer>AURUM SMC TERMINAL · Educational prototype · Not financial advice</footer>
+<script>
+const tf=document.getElementById('tf');
+tf.addEventListener('change',()=>document.getElementById('tfVal').textContent=tf.value);
+function refreshDemo(){
+ document.getElementById('signal').textContent='WAIT';
+ document.getElementById('signal').style.color='var(--gold)';
+ document.getElementById('reason').textContent='Demo check complete: no verified data feed or validated SMC setup is connected. No trade.';
+ document.getElementById('statusVal').textContent='WAIT';
+ document.getElementById('biasVal').textContent='Unconfirmed';
+}
+function resetDemo(){
+ document.getElementById('signal').textContent='WAIT';
+ document.getElementById('reason').textContent='Live market feed and confirmation rules are not connected yet.';
+ document.getElementById('statusVal').textContent='WAIT';
+ document.getElementById('biasVal').textContent='Unconfirmed';
+}
+</script>
+</body>
+</html>
